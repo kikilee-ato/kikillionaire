@@ -1,0 +1,166 @@
+.container {
+  margin-bottom: var(--space-md);
+}
+
+.title {
+  font-size: var(--font-size-md);
+  margin-bottom: var(--space-md);
+}
+
+.tabs {
+  display: flex;
+  background-color: var(--color-bg-surface-hover);
+  border-radius: var(--border-radius-md);
+  padding: 4px;
+  margin-bottom: var(--space-md);
+}
+
+.tab {
+  flex: 1;
+  padding: var(--space-sm);
+  text-align: center;
+  border-radius: var(--border-radius-sm);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.activeTab {
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-medium);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.assetGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.assetGroup .formGroup {
+  flex: 1;
+  margin-bottom: 0;
+}
+
+.transferIcon {
+  color: var(--color-text-tertiary);
+  padding-top: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.amountHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.formGroup label {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-tertiary);
+  font-weight: var(--font-weight-medium);
+}
+
+.formGroup select,
+.formGroup input {
+  padding: var(--space-sm);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-md);
+  background-color: var(--color-bg-surface);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-md);
+}
+
+.inputWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.inputWrapper input {
+  width: 100%;
+  padding-right: 36px !important;
+  /* Hide spinner arrows (Chrome, Safari, Edge, Opera) */
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+/* Hide spinner arrows (Firefox) */
+.inputWrapper input[type=number] {
+  -moz-appearance: textfield;
+}
+
+.inputWrapper input::-webkit-outer-spin-button,
+.inputWrapper input::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.clearBtn {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--color-text-tertiary);
+  font-size: 12px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--border-radius-full);
+  z-index: 10;
+}
+
+.clearBtn:active {
+  background-color: var(--color-bg-surface-hover);
+  color: var(--color-text-primary);
+}
+
+.formGroup select:focus,
+.formGroup input:focus {
+  outline: none;
+  border-color: var(--color-primary);
+}
+
+/* Quick buttons styling */
+.quickButtons {
+  display: flex;
+  gap: var(--space-xs);
+  margin-top: 4px;
+}
+
+.quickButtons button {
+  flex: 1;
+  padding: var(--space-xs) 0;
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-sm);
+  font-size: 11px;
+  background-color: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  font-weight: var(--font-weight-medium);
+  transition: background-color 0.15s;
+}
+
+.quickButtons button:active {
+  background-color: var(--color-border);
+}
+
+.quickButtons .allBtn {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #fff;
+}
+
+.quickButtons .allBtn:active {
+  opacity: 0.9;
+}
