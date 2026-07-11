@@ -99,7 +99,45 @@ export async function GET() {
           } else {
             currentBalance = Number(asset.Balance) || 0;
           }
+        } else if (
+          asset.AssetType === 'Wallet' ||
+          asset.AssetType === 'Deposit' ||
+          asset.AssetType === 'Cash'
+        ) {
+          // 지출, 수입, 이체 내역을 반영하여 실시간 잔액 계산
+          transactions.forEach((tx) => {
+            const amount = Number(tx.Amount) || 0;
+            if (amount <= 0) return;
+
+            // 거래 금액을 자산의 통화에 맞춰 변환
+            let txAmountInAssetCurrency = amount;
+            if (tx.Currency !== asset.Currency) {
+              if (asset.Currency === 'EUR') {
+                txAmountInAssetCurrency = amount / eurToKrw;
+              } else {
+                txAmountInAssetCurrency = amount * eurToKrw;
+              }
+            }
+
+            if (tx.Category === 'Expense') {
+              if (tx.FromAsset === asset.AssetName) {
+                currentBalance -= txAmountInAssetCurrency;
+              }
+            } else if (tx.Category === 'Income') {
+              if (tx.FromAsset === asset.AssetName) { // 수입의 대상 자산
+                currentBalance += txAmountInAssetCurrency;
+              }
+            } else if (tx.Category === 'Transfer') {
+              if (tx.FromAsset === asset.AssetName) {
+                currentBalance -= txAmountInAssetCurrency;
+              }
+              if (tx.ToAsset === asset.AssetName) {
+                currentBalance += txAmountInAssetCurrency;
+              }
+            }
+          });
         }
+
 
         return {
           ...asset,
