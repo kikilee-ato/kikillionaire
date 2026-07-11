@@ -28,7 +28,7 @@
   background-color: var(--color-bg-surface);
   color: var(--color-text-primary);
   font-weight: var(--font-weight-medium);
-  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 .form {
@@ -162,5 +162,51 @@
 }
 
 .quickButtons .allBtn:active {
+  opacity: 0.9;
+}
+
+/* Category Selection Row (Horizontal Scroll) */
+.categoryGrid {
+  display: flex;
+  gap: var(--space-sm);
+  overflow-x: auto;
+  padding: 4px 0 8px 0;
+  margin-top: 4px;
+  -webkit-overflow-scrolling: touch;
+  /* Hide scrollbar for Firefox */
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar for Chrome, Safari, Opera */
+.categoryGrid::-webkit-scrollbar {
+  display: none;
+}
+
+.categoryBtn {
+  flex-shrink: 0;
+  padding: var(--space-sm) var(--space-md);
+  border: 1px solid var(--color-border);
+  border-radius: var(--border-radius-full);
+  font-size: var(--font-size-sm);
+  background-color: var(--color-bg-surface-hover);
+  color: var(--color-text-secondary);
+  text-align: center;
+  transition: all 0.15s ease;
+  font-weight: var(--font-weight-medium);
+  white-space: nowrap;
+}
+
+.categoryBtn:hover {
+  background-color: var(--color-border);
+}
+
+.activeCategoryBtn {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.activeCategoryBtn:hover {
+  background-color: var(--color-primary);
   opacity: 0.9;
 }

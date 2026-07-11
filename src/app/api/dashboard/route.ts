@@ -43,10 +43,10 @@ export async function GET() {
           const startDateStr = parts[1] || ''; // 가입일 (예: 2025-10-15)
           const termMonths = Number(parts[2]) || 12; // 만기 기간 (기본값 12개월)
           const maxDays = Math.round(termMonths * 30.4375); // e.g. 12개월 = 365일
-          
+
           if (rate > 0) {
             const now = new Date();
-            
+
             // 가입일 이후 추가 입금(Transfer)된 내역 필터링
             const txsToSavings = transactions.filter(
               (tx) => tx.Category === 'Transfer' && tx.ToAsset === asset.AssetName
@@ -74,7 +74,7 @@ export async function GET() {
               const txDate = new Date(tx.Date);
               // 가입일 이전의 이체 내역은 중복 계산 방지를 위해 패스
               if (startDateStr && txDate <= new Date(startDateStr)) return;
-              
+
               const diffTime = Math.abs(now.getTime() - txDate.getTime());
               const diffDays = Math.min(maxDays, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
               const amount = Number(tx.Amount) || 0;
@@ -99,44 +99,8 @@ export async function GET() {
           } else {
             currentBalance = Number(asset.Balance) || 0;
           }
-        } else if (
-          asset.AssetType === 'Wallet' ||
-          asset.AssetType === 'Deposit' ||
-          asset.AssetType === 'Cash'
-        ) {
-          // 지출, 수입, 이체 내역을 반영하여 실시간 잔액 계산
-          transactions.forEach((tx) => {
-            const amount = Number(tx.Amount) || 0;
-            if (amount <= 0) return;
-
-            // 거래 금액을 자산의 통화에 맞춰 변환
-            let txAmountInAssetCurrency = amount;
-            if (tx.Currency !== asset.Currency) {
-              if (asset.Currency === 'EUR') {
-                txAmountInAssetCurrency = amount / eurToKrw;
-              } else {
-                txAmountInAssetCurrency = amount * eurToKrw;
-              }
-            }
-
-            if (tx.Category === 'Expense') {
-              if (tx.FromAsset === asset.AssetName) {
-                currentBalance -= txAmountInAssetCurrency;
-              }
-            } else if (tx.Category === 'Income') {
-              if (tx.FromAsset === asset.AssetName) { // 수입의 대상 자산
-                currentBalance += txAmountInAssetCurrency;
-              }
-            } else if (tx.Category === 'Transfer') {
-              if (tx.FromAsset === asset.AssetName) {
-                currentBalance -= txAmountInAssetCurrency;
-              }
-              if (tx.ToAsset === asset.AssetName) {
-                currentBalance += txAmountInAssetCurrency;
-              }
-            }
-          });
         }
+
 
 
         return {
@@ -148,25 +112,17 @@ export async function GET() {
       })
     );
 
-    const ASSET_NAME_ORDER: Record<string, number> = {
-      'Travel Wallet': 1,
-      'N26': 2,
-      'KR Bank Deposit': 3,
-      'KR Bank Savings': 4,
-      'Cash (EUR)': 6
-    };
-
-    const ASSET_TYPE_ORDER: Record<string, number> = {
-      'Wallet': 1,
-      'Deposit': 2,
-      'Savings': 4,
-      'Stocks': 5,
-      'Cash': 6
+    const ASSET_ORDER: Record<string, number> = {
+      'Cash (EUR)': 1,
+      'Travel Wallet': 2,
+      'N26': 3,
+      'KR Bank Deposit': 4,
+      'KR Bank Savings': 5
     };
 
     const sortedAssets = processedAssets.sort((a, b) => {
-      const orderA = ASSET_NAME_ORDER[a.AssetName] || ASSET_TYPE_ORDER[a.AssetType] || 99;
-      const orderB = ASSET_NAME_ORDER[b.AssetName] || ASSET_TYPE_ORDER[b.AssetType] || 99;
+      const orderA = ASSET_ORDER[a.AssetName] || 99;
+      const orderB = ASSET_ORDER[b.AssetName] || 99;
       return orderA - orderB;
     });
 

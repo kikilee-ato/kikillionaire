@@ -5,8 +5,10 @@ export default function Home() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <h1 className={styles.appTitle}>Kikillionaire</h1>
-        <p className={styles.appSubtitle}>Quick Entry</p>
+        <div className={styles.titleSection}>
+          <h1 className={styles.appTitle}>Kikillionaire</h1>
+          <p className={styles.appSubtitle}>Quick Entry</p>
+        </div>
       </header>
       
       <FastEntryForm />

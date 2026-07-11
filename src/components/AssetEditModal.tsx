@@ -25,7 +25,11 @@ export default function AssetEditModal({ asset, isOpen, onClose, onSave }: Asset
 
   useEffect(() => {
     if (asset) {
-      setBalance(asset.Balance.toString());
+      const rawBalance = Number(asset.Balance) || 0;
+      const formattedBalance = asset.Currency === 'KRW'
+        ? Math.round(rawBalance).toString()
+        : Number(rawBalance.toFixed(2)).toString();
+      setBalance(formattedBalance);
       setQuantity(asset.Quantity?.toString() || '');
       setExtra(asset.Extra || '');
       // Reset calculator

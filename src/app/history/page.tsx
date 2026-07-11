@@ -43,7 +43,7 @@ export default function History() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.titleSection}>
           <h1 className={styles.appTitle}>History</h1>
           <p className={styles.appSubtitle}>Transaction records</p>
         </div>

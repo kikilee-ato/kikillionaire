@@ -95,7 +95,7 @@ export default function Dashboard() {
   return (
     <main className={styles.main}>
       <header className={styles.header}>
-        <div>
+        <div className={styles.titleSection}>
           <h1 className={styles.appTitle}>Assets</h1>
           <p className={styles.appSubtitle}>Manage your funds</p>
         </div>

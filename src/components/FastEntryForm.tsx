@@ -8,8 +8,8 @@ import { ToggleSwitch } from './ui/ToggleSwitch';
 import { appendRow, Asset } from '@/lib/googleSheets';
 
 // Fallback assets in case dynamic fetch is loading or fails
-const FALLBACK_EXPENSE_ASSETS = ['Travel Wallet', 'Cash (EUR)', 'N26', 'KR Bank Deposit'];
-const FALLBACK_ALL_ASSETS = ['Travel Wallet', 'N26', 'KR Bank Deposit', 'KR Bank Savings', 'KR Stocks', 'Cash (EUR)'];
+const FALLBACK_EXPENSE_ASSETS = ['Cash (EUR)', 'Travel Wallet', 'N26', 'KR Bank Deposit'];
+const FALLBACK_ALL_ASSETS = ['Cash (EUR)', 'Travel Wallet', 'N26', 'KR Bank Deposit', 'KR Bank Savings', 'KR Stocks'];
 
 const EXPENSE_CATEGORIES = [
   'Food/Groceries',
@@ -42,6 +42,7 @@ export default function FastEntryForm({ onSuccess }: FastEntryFormProps) {
   
   const [subCategory, setSubCategory] = useState(EXPENSE_CATEGORIES[0]);
   const [isLoading, setIsLoading] = useState(false);
+  const [customRate, setCustomRate] = useState('');
 
   // Input Currency Toggle State
   const [inputCurrency, setInputCurrency] = useState<'EUR' | 'KRW'>('EUR');
@@ -54,7 +55,9 @@ export default function FastEntryForm({ onSuccess }: FastEntryFormProps) {
         if (res.ok) {
           const json = await res.json();
           const assetsList: Asset[] = json.assets || [];
-          setEurToKrw(json.eurToKrw || 1450);
+          const fetchedRate = json.eurToKrw || 1450;
+          setEurToKrw(fetchedRate);
+          setCustomRate(Math.round(fetchedRate).toString());
           setDbAssets(assetsList);
 
           if (assetsList.length > 0) {
@@ -137,15 +140,21 @@ export default function FastEntryForm({ onSuccess }: FastEntryFormProps) {
 
     // Convert logged amount to match selected FromAsset's currency if they differ
     const asset = dbAssets.find(a => a.AssetName === fromAsset);
+    const targetAssetObj = dbAssets.find(a => a.AssetName === toAsset);
+    const isCrossCurrency = type === 'Transfer' && asset && targetAssetObj && asset.Currency !== targetAssetObj.Currency;
+    
+    // Use custom rate if provided, otherwise use the API rate
+    const rateToUse = isCrossCurrency && customRate ? Number(customRate) : eurToKrw;
+
     let finalAmount = Number(amount);
     let finalCurrency = inputCurrency;
 
     // Log the transaction in the currency matching the source asset
     if (asset && asset.Currency !== inputCurrency) {
       if (asset.Currency === 'EUR') {
-        finalAmount = Number((finalAmount / eurToKrw).toFixed(2));
+        finalAmount = Number((finalAmount / rateToUse).toFixed(2));
       } else {
-        finalAmount = Math.round(finalAmount * eurToKrw);
+        finalAmount = Math.round(finalAmount * rateToUse);
       }
       finalCurrency = asset.Currency;
     }
@@ -159,7 +168,7 @@ export default function FastEntryForm({ onSuccess }: FastEntryFormProps) {
       Amount: finalAmount,
       Currency: finalCurrency,
       Merchant: type === 'Transfer' ? 'Transfer' : 'Manual Entry',
-      Memo: ''
+      Memo: isCrossCurrency && customRate ? `Rate: 1 EUR = ${customRate} KRW` : ''
     };
 
     const res = await appendRow('Transactions', newTx);
@@ -200,32 +209,77 @@ export default function FastEntryForm({ onSuccess }: FastEntryFormProps) {
         {type === 'Expense' && (
           <div className={styles.formGroup}>
             <label>Category</label>
-            <select value={subCategory} onChange={(e) => setSubCategory(e.target.value)}>
-              {EXPENSE_CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
-            </select>
+            <div className={styles.categoryGrid}>
+              {EXPENSE_CATEGORIES.map((cat) => (
+                <button
+                  key={cat}
+                  type="button"
+                  className={`${styles.categoryBtn} ${subCategory === cat ? styles.activeCategoryBtn : ''}`}
+                  onClick={() => setSubCategory(cat)}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
           </div>
         )}
 
-        <div className={styles.assetGroup}>
-          <div className={styles.formGroup}>
-            <label>{type === 'Income' ? 'Target Asset' : 'Source Asset'}</label>
-            <select value={fromAsset} onChange={(e) => setFromAsset(e.target.value)}>
-              {expenseAssets.map((a, idx) => <option key={`${a}-${idx}`} value={a}>{a}</option>)}
-            </select>
+        <div className={styles.formGroup}>
+          <label>{type === 'Income' ? 'Target Asset' : 'Source Asset'}</label>
+          <div className={styles.categoryGrid}>
+            {expenseAssets.map((a) => (
+              <button
+                key={a}
+                type="button"
+                className={`${styles.categoryBtn} ${fromAsset === a ? styles.activeCategoryBtn : ''}`}
+                onClick={() => setFromAsset(a)}
+              >
+                {a}
+              </button>
+            ))}
           </div>
-
-          {type === 'Transfer' && (
-            <>
-              <div className={styles.transferIcon}>➔</div>
-              <div className={styles.formGroup}>
-                <label>Target Asset</label>
-                <select value={toAsset} onChange={(e) => setToAsset(e.target.value)}>
-                  {allAssets.map((a, idx) => <option key={`${a}-${idx}`} value={a}>{a}</option>)}
-                </select>
-              </div>
-            </>
-          )}
         </div>
+
+        {type === 'Transfer' && (
+          <div className={styles.formGroup}>
+            <label>Target Asset</label>
+            <div className={styles.categoryGrid}>
+              {allAssets.map((a) => (
+                <button
+                  key={a}
+                  type="button"
+                  className={`${styles.categoryBtn} ${toAsset === a ? styles.activeCategoryBtn : ''}`}
+                  onClick={() => setToAsset(a)}
+                >
+                  {a}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Custom Exchange Rate Field for Cross-Currency Transfers */}
+        {(() => {
+          const srcAsset = dbAssets.find(a => a.AssetName === fromAsset);
+          const dstAsset = dbAssets.find(a => a.AssetName === toAsset);
+          const isCrossCurrency = type === 'Transfer' && srcAsset && dstAsset && srcAsset.Currency !== dstAsset.Currency;
+          
+          if (isCrossCurrency) {
+            return (
+              <div className={styles.formGroup}>
+                <label>Exchange Rate (1 EUR = ? KRW)</label>
+                <input 
+                  type="number" 
+                  step="0.01"
+                  value={customRate} 
+                  onChange={(e) => setCustomRate(e.target.value)} 
+                  placeholder={Math.round(eurToKrw).toString()} 
+                />
+              </div>
+            );
+          }
+          return null;
+        })()}
 
         {/* Amount Input with Currency Toggle */}
         <div className={styles.formGroup}>
