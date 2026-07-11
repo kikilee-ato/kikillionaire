@@ -8,8 +8,8 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Kikillionaire - 가계부",
-  description: "워킹홀리데이 개인 자산 관리 앱",
+  title: "Kikillionaire",
+  description: "account book for anyone relocating abroad",
   manifest: "/manifest.json",
   icons: {
     apple: "/icon.png",
@@ -17,7 +17,7 @@ export const metadata: Metadata = {
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
-    title: "가계부",
+    title: "Kikillionaire",
   },
 };
 
