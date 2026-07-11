@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { fetchSheetData, Asset, Transaction } from '@/lib/googleSheets';
+import { fetchSheetDataAll, Asset, Transaction } from '@/lib/googleSheets';
 import { getExchangeRate } from '@/lib/exchangeRate';
 
 // Helper to fetch stock price from Yahoo Finance
@@ -24,11 +24,9 @@ export async function GET() {
     // 1. Fetch exchange rate (EUR to KRW)
     const eurToKrw = await getExchangeRate();
 
-    // 2. Fetch Assets and Transactions from Google Sheets
-    const [assets, transactions] = await Promise.all([
-      fetchSheetData<Asset>('Assets'),
-      fetchSheetData<Transaction>('Transactions'),
-    ]);
+    // 2. Fetch Assets and Transactions from Google Sheets in a single call
+    const { Assets: assets, Transactions: transactions } = await fetchSheetDataAll();
+
 
     // 3. Process Assets and calculate real-time valuations
     const processedAssets = await Promise.all(

@@ -33,11 +33,25 @@
 ```javascript
 function doGet(e) {
   var sheetName = e.parameter.sheet;
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  if (!sheet) {
-    return ContentService.createTextOutput(JSON.stringify({ error: "Sheet not found" }))
-                         .setMimeType(ContentService.MimeType.JSON);
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  // 'all'을 요청받거나 매개변수가 없으면 양쪽 시트 데이터를 한 번에 반환
+  if (sheetName === 'all' || !sheetName) {
+    return ContentService.createTextOutput(JSON.stringify({
+      Assets: getSheetData(ss, 'Assets'),
+      Transactions: getSheetData(ss, 'Transactions')
+    })).setMimeType(ContentService.MimeType.JSON);
   }
+  
+  // 개별 시트 요청 처리
+  var data = getSheetData(ss, sheetName);
+  return ContentService.createTextOutput(JSON.stringify(data))
+                       .setMimeType(ContentService.MimeType.JSON);
+}
+
+function getSheetData(ss, name) {
+  var sheet = ss.getSheetByName(name);
+  if (!sheet) return [];
   
   var data = [];
   var rows = sheet.getDataRange().getValues();
@@ -48,7 +62,6 @@ function doGet(e) {
     var record = {};
     for (var j = 0; j < headers.length; j++) {
       var val = row[j];
-      // Date 타입 처리
       if (val instanceof Date) {
         val = Utilities.formatDate(val, Session.getScriptTimeZone(), "yyyy-MM-dd");
       }
@@ -56,9 +69,7 @@ function doGet(e) {
     }
     data.push(record);
   }
-  
-  return ContentService.createTextOutput(JSON.stringify(data))
-                       .setMimeType(ContentService.MimeType.JSON);
+  return data;
 }
 
 function doPost(e) {
